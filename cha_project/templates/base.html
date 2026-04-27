@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CHA — Coruscant Health Administration{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --void: #060810;
+            --deep: #0d1117;
+            --surface: #111827;
+            --card: #1a2236;
+            --border: #1f2d45;
+            --muted: #374151;
+            --text-dim: #6b7280;
+            --text: #c9d1e0;
+            --text-bright: #e8edf5;
+            --accent: #00d4ff;
+            --accent-2: #7c3aed;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --critical: #dc2626;
+            --glow: 0 0 20px rgba(0,212,255,0.15);
+            --shadow: 0 4px 24px rgba(0,0,0,0.4);
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { font-size: 15px; scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--void);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            overflow-x: hidden;
+        }
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            min-height: 100vh;
+            background: var(--deep);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            z-index: 100;
+            transition: transform 0.3s;
+        }
+        .sidebar-logo {
+            padding: 28px 24px 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo-mark {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-icon {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-2));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        .logo-text {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: var(--text-bright);
+            letter-spacing: -0.02em;
+        }
+        .logo-sub {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+        .sidebar-user {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .user-avatar {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-2), var(--accent));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            flex-shrink: 0;
+        }
+        .user-info-name { font-weight: 500; font-size: 0.875rem; color: var(--text-bright); }
+        .role-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-top: 3px;
+        }
+        .role-patient { background: rgba(16,185,129,0.15); color: var(--success); }
+        .role-doctor { background: rgba(0,212,255,0.12); color: var(--accent); }
+        .role-administrator { background: rgba(124,58,237,0.15); color: #a78bfa; }
+        .role-emergency { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .role-department { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .sidebar-nav { flex: 1; padding: 16px 12px; overflow-y: auto; }
+        .nav-group { margin-bottom: 24px; }
+        .nav-group-label {
+            font-size: 0.6rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 0 12px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 400;
+            transition: all 0.15s;
+            margin-bottom: 2px;
+        }
+        .nav-link:hover, .nav-link.active {
+            background: rgba(0,212,255,0.07);
+            color: var(--text-bright);
+        }
+        .nav-link.active { color: var(--accent); }
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 12px; border-top: 1px solid var(--border); }
+        /* Main */
+        .main {
+            margin-left: 260px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .topbar {
+            height: 60px;
+            background: var(--deep);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 32px;
+            gap: 16px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .topbar-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text-bright);
+            flex: 1;
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 12px; }
+        .content { padding: 32px; flex: 1; max-width: 1400px; width: 100%; }
+        /* Cards */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-bright);
+            margin-bottom: 16px;
+        }
+        /* Stat cards */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--accent-color, var(--accent));
+        }
+        .stat-icon {
+            width: 40px; height: 40px;
+            border-radius: 10px;
+            background: var(--accent-bg, rgba(0,212,255,0.1));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        .stat-value {
+            font-family: 'Syne', sans-serif;
+            font-weight: 800;
+            font-size: 1.75rem;
+            color: var(--text-bright);
+            line-height: 1;
+        }
+        .stat-label { font-size: 0.8rem; color: var(--text-dim); margin-top: 4px; }
+        /* Table */
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th {
+            text-align: left;
+            padding: 10px 16px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table td {
+            padding: 14px 16px;
+            font-size: 0.875rem;
+            border-bottom: 1px solid rgba(31,45,69,0.5);
+            color: var(--text);
+        }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            white-space: nowrap;
+        }
+        .btn-primary { background: var(--accent); color: var(--void); }
+        .btn-primary:hover { background: #00b8d9; }
+        .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+        .btn-success { background: rgba(16,185,129,0.15); color: var(--success); border: 1px solid rgba(16,185,129,0.3); }
+        .btn-danger { background: rgba(239,68,68,0.12); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+        .btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+        .btn-warning { background: rgba(245,158,11,0.15); color: var(--warning); border: 1px solid rgba(245,158,11,0.3); }
+        /* Form */
+        .form-group { margin-bottom: 18px; }
+        .form-label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--text-dim); margin-bottom: 6px; letter-spacing: 0.03em; }
+        .form-control {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-bright);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.875rem;
+            transition: border-color 0.15s;
+            outline: none;
+        }
+        .form-control:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,212,255,0.08); }
+        select.form-control option { background: var(--surface); }
+        textarea.form-control { resize: vertical; min-height: 90px; }
+        /* Alerts */
+        .alert { padding: 12px 16px; border-radius: 8px; font-size: 0.875rem; margin-bottom: 16px; }
+        .alert-success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--success); }
+        .alert-error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: var(--danger); }
+        .alert-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: var(--warning); }
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .badge-pending { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-completed { background: rgba(16,185,129,0.15); color: var(--success); }
+        .badge-in_progress { background: rgba(0,212,255,0.12); color: var(--accent); }
+        .badge-cancelled { background: rgba(107,114,128,0.15); color: var(--text-dim); }
+        .badge-critical { background: rgba(220,38,38,0.15); color: var(--critical); }
+        .badge-urgent { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .badge-high { background: rgba(245,158,11,0.15); color: var(--warning); }
+        .badge-normal { background: rgba(107,114,128,0.15); color: var(--text-dim); }
+        /* Grid */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+        /* Separator */
+        .sep { height: 1px; background: var(--border); margin: 20px 0; }
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--muted); border-radius: 3px; }
+        /* Pulse animation */
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        .pulse { animation: pulse 2s infinite; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+        .fade-in { animation: fadeIn 0.3s ease forwards; }
+        /* Responsive */
+        @media(max-width: 900px){
+            .sidebar { transform: translateX(-260px); }
+            .main { margin-left: 0; }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+<nav class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-mark">
+            <div class="logo-icon">⚕</div>
+            <div>
+                <div class="logo-text">CHA</div>
+                <div class="logo-sub">Health Admin</div>
+            </div>
+        </div>
+    </div>
+    <div class="sidebar-user">
+        <div class="user-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+        <div>
+            <div class="user-info-name">{{ user.get_full_name|default:user.username }}</div>
+            <span class="role-badge role-{{ user.role }}">{{ user.get_role_display }}</span>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-group">
+            <div class="nav-group-label">Main</div>
+            <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                <span class="nav-icon">⊞</span> Dashboard
+            </a>
+        </div>
+        {% if user.role == 'patient' %}
+        <div class="nav-group">
+            <div class="nav-group-label">My Health</div>
+            <a href="{% url 'upload_health' %}" class="nav-link">
+                <span class="nav-icon">↑</span> Upload Data
+            </a>
+            <a href="{% url 'patient_records' %}" class="nav-link">
+                <span class="nav-icon">♡</span> Health Records
+            </a>
+            <a href="{% url 'my_documents' %}" class="nav-link">
+                <span class="nav-icon">📄</span> Documents
+            </a>
+        </div>
+        {% endif %}
+        {% if user.role == 'doctor' %}
+        <div class="nav-group">
+            <div class="nav-group-label">Clinical</div>
+            <a href="{% url 'all_patients' %}" class="nav-link">
+                <span class="nav-icon">👤</span> Patients
+            </a>
+            <a href="{% url 'write_report' %}" class="nav-link">
+                <span class="nav-icon">✏</span> Write Report
+            </a>
+            <a href="{% url 'doctor_reports' %}" class="nav-link">
+                <span class="nav-icon">📋</span> Reports
+            </a>
+            <a href="{% url 'create_order' %}" class="nav-link">
+                <span class="nav-icon">+</span> Create Order
+            </a>
+            <a href="{% url 'doctor_orders' %}" class="nav-link">
+                <span class="nav-icon">🔬</span> Orders
+            </a>
+            <a href="{% url 'upload_document' %}" class="nav-link">
+                <span class="nav-icon">📁</span> Documents
+            </a>
+        </div>
+        {% endif %}
+        {% if user.role == 'administrator' or user.is_superuser %}
+        <div class="nav-group">
+            <div class="nav-group-label">Admin</div>
+            <a href="{% url 'all_patients' %}" class="nav-link">
+                <span class="nav-icon">👥</span> All Patients
+            </a>
+            <a href="{% url 'doctor_reports' %}" class="nav-link">
+                <span class="nav-icon">📋</span> All Reports
+            </a>
+            <a href="{% url 'doctor_orders' %}" class="nav-link">
+                <span class="nav-icon">🔬</span> All Orders
+            </a>
+            <a href="{% url 'my_documents' %}" class="nav-link">
+                <span class="nav-icon">🗄</span> Documents
+            </a>
+            <a href="/admin/" class="nav-link">
+                <span class="nav-icon">⚙</span> Django Admin
+            </a>
+        </div>
+        {% endif %}
+        {% if user.role == 'emergency' %}
+        <div class="nav-group">
+            <div class="nav-group-label">Emergency</div>
+            <a href="{% url 'register_emergency' %}" class="nav-link">
+                <span class="nav-icon">🚨</span> Register Patient
+            </a>
+            <a href="{% url 'emergency_list' %}" class="nav-link">
+                <span class="nav-icon">📋</span> Active Cases
+            </a>
+        </div>
+        {% endif %}
+        {% if user.role == 'department' %}
+        <div class="nav-group">
+            <div class="nav-group-label">Department</div>
+            <a href="{% url 'department_orders' %}" class="nav-link">
+                <span class="nav-icon">📥</span> Order Queue
+            </a>
+        </div>
+        {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+        <a href="{% url 'logout' %}" class="nav-link">
+            <span class="nav-icon">⎋</span> Sign Out
+        </a>
+    </div>
+</nav>
+{% endif %}
+
+<div class="main">
+    {% if user.is_authenticated %}
+    <div class="topbar">
+        <div class="topbar-title">{% block page_title %}Dashboard{% endblock %}</div>
+        <div class="topbar-actions">
+            {% if user.role == 'emergency' %}
+            <a href="{% url 'register_emergency' %}" class="btn btn-danger btn-sm">🚨 Emergency Admit</a>
+            {% endif %}
+            <span style="font-size:0.8rem;color:var(--text-dim)">{{ user.username }}</span>
+        </div>
+    </div>
+    {% endif %}
+    <div class="content fade-in">
+        {% for msg in messages %}
+        <div class="alert alert-{% if msg.tags == 'error' %}error{% elif msg.tags == 'warning' %}warning{% else %}success{% endif %}">
+            {{ msg }}
+        </div>
+        {% endfor %}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

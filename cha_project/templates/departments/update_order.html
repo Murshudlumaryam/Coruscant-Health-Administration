@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Update Order — CHA{% endblock %}
+{% block page_title %}Process Order{% endblock %}
+{% block content %}
+<div style="max-width:700px">
+<div class="card" style="margin-bottom:20px;background:rgba(0,212,255,0.04);border-color:rgba(0,212,255,0.2)">
+    <div style="display:flex;gap:20px">
+        <div>
+            <div style="font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Order Type</div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;color:var(--text-bright)">{{ order.get_order_type_display }}</div>
+        </div>
+        <div>
+            <div style="font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Patient</div>
+            <div style="font-weight:500;color:var(--text-bright)">{{ order.patient.get_full_name }}</div>
+        </div>
+        <div>
+            <div style="font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Priority</div>
+            <span class="badge badge-{{ order.priority }}">{{ order.priority|title }}</span>
+        </div>
+        <div>
+            <div style="font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Current Status</div>
+            <span class="badge badge-{{ order.status }}">{{ order.get_status_display }}</span>
+        </div>
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(0,212,255,0.15)">
+        <div style="font-size:0.72rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Clinical Description</div>
+        <div style="font-size:0.875rem;color:var(--text)">{{ order.description }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Update Order Status</div>
+    <form method="post" enctype="multipart/form-data">{% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">New Status</label>
+            <select name="status" class="form-control" required>
+                {% for val, label in status_choices %}
+                <option value="{{ val }}" {% if val == order.status %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Findings / Results</label>
+            <textarea name="findings" class="form-control" rows="5" placeholder="Describe findings, observations, and results...">{% if order.result %}{{ order.result.findings }}{% endif %}</textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Upload Result File (optional)</label>
+            <input type="file" name="report_file" class="form-control" accept=".pdf,.jpg,.png,.dcm">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="Additional notes for the doctor..."></textarea>
+        </div>
+        <div style="display:flex;gap:12px">
+            <button type="submit" class="btn btn-primary">Save Update →</button>
+            <a href="{% url 'department_orders' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}

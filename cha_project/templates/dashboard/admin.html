@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — CHA{% endblock %}
+{% block page_title %}Administrator Dashboard{% endblock %}
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card" style="--accent-color:#7c3aed;--accent-bg:rgba(124,58,237,0.1)">
+        <div class="stat-icon">👥</div>
+        <div class="stat-value">{{ total_patients }}</div>
+        <div class="stat-label">Total Patients</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#00d4ff;--accent-bg:rgba(0,212,255,0.1)">
+        <div class="stat-icon">🩺</div>
+        <div class="stat-value">{{ total_doctors }}</div>
+        <div class="stat-label">Total Doctors</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#10b981;--accent-bg:rgba(16,185,129,0.1)">
+        <div class="stat-icon">♡</div>
+        <div class="stat-value">{{ total_records }}</div>
+        <div class="stat-label">Health Records</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#f59e0b;--accent-bg:rgba(245,158,11,0.1)">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-value">{{ pending_users|length }}</div>
+        <div class="stat-label">Pending Approvals</div>
+    </div>
+</div>
+
+{% if pending_users %}
+<div class="card" style="margin-bottom:24px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:0">⏳ Pending Approvals</div>
+        <span style="font-size:0.8rem;color:var(--warning);background:rgba(245,158,11,0.1);padding:4px 10px;border-radius:6px">{{ pending_users|length }} waiting</span>
+    </div>
+    <table class="data-table">
+        <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody>
+        {% for u in pending_users %}
+        <tr>
+            <td style="font-weight:500;color:var(--text-bright)">{{ u.get_full_name|default:u.username }}</td>
+            <td style="font-family:monospace;font-size:0.82rem">{{ u.username }}</td>
+            <td style="color:var(--text-dim)">{{ u.email }}</td>
+            <td><span class="role-badge role-{{ u.role }}">{{ u.get_role_display }}</span></td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ u.date_joined|date:"M d, Y" }}</td>
+            <td>
+                <a href="{% url 'approve_user' u.id %}" class="btn btn-success btn-sm">✓ Approve</a>
+                <a href="{% url 'reject_user' u.id %}" class="btn btn-danger btn-sm" style="margin-left:6px">✗ Reject</a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="card-title">Recent Users</div>
+    <table class="data-table">
+        <thead><tr><th>Name</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
+        <tbody>
+        {% for u in recent_users %}
+        <tr>
+            <td style="font-weight:500;color:var(--text-bright)">{{ u.get_full_name|default:u.username }}<br><span style="font-size:0.78rem;color:var(--text-dim)">{{ u.email }}</span></td>
+            <td><span class="role-badge role-{{ u.role }}">{{ u.get_role_display }}</span></td>
+            <td>
+                {% if u.is_approved %}<span class="badge badge-completed">Active</span>
+                {% else %}<span class="badge badge-pending">Pending</span>{% endif %}
+            </td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ u.date_joined|date:"M d, Y" }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+{% block title %}Patient Dashboard — CHA{% endblock %}
+{% block page_title %}My Health Dashboard{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card" style="--accent-color:#10b981">
+        <div class="stat-icon" style="background:rgba(16,185,129,0.1)">♡</div>
+        <div class="stat-value">{{ health_records|length }}</div>
+        <div class="stat-label">Health Records</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#00d4ff">
+        <div class="stat-icon" style="background:rgba(0,212,255,0.1)">📋</div>
+        <div class="stat-value">{{ reports|length }}</div>
+        <div class="stat-label">Doctor Reports</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#7c3aed">
+        <div class="stat-icon" style="background:rgba(124,58,237,0.1)">🔬</div>
+        <div class="stat-value">{{ orders|length }}</div>
+        <div class="stat-label">Medical Orders</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#f59e0b">
+        <div class="stat-icon" style="background:rgba(245,158,11,0.1)">📄</div>
+        <div class="stat-value">{{ documents|length }}</div>
+        <div class="stat-label">Documents</div>
+    </div>
+</div>
+
+{% if health_records %}
+<div class="card" style="margin-bottom:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div class="card-title" style="margin-bottom:0">Health Vitals</div>
+        <a href="{% url 'upload_health' %}" class="btn btn-primary btn-sm">+ Upload Data</a>
+    </div>
+    <canvas id="vitalsChart" height="80"></canvas>
+</div>
+{% endif %}
+
+<div class="grid-2" style="margin-bottom:24px">
+    <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div class="card-title" style="margin-bottom:0">Recent Records</div>
+            <a href="{% url 'patient_records' %}" class="btn btn-secondary btn-sm">View All</a>
+        </div>
+        {% for r in health_records %}
+        <div style="padding:12px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+            <div>
+                <div style="font-size:0.82rem;color:var(--text-dim)">{{ r.recorded_at|date:"M d, Y H:i" }}</div>
+                <div style="font-size:0.875rem;color:var(--text);margin-top:3px">
+                    {% if r.heart_rate %}❤ {{ r.heart_rate }} bpm {% endif %}
+                    {% if r.temperature %}🌡 {{ r.temperature }}°C{% endif %}
+                </div>
+            </div>
+            <span class="badge badge-{{ r.source }}">{{ r.source }}</span>
+        </div>
+        {% empty %}<p style="color:var(--text-dim);font-size:0.875rem">No records yet.</p>
+        {% endfor %}
+    </div>
+    <div class="card">
+        <div class="card-title">Doctor Prescriptions</div>
+        {% for r in reports %}
+        <div style="padding:12px 0;border-bottom:1px solid var(--border)">
+            <div style="font-weight:500;color:var(--text-bright);font-size:0.9rem">{{ r.title }}</div>
+            <div style="font-size:0.8rem;color:var(--text-dim);margin-top:4px">Dr. {{ r.doctor.get_full_name }} · {{ r.created_at|date:"M d" }}</div>
+            <div style="font-size:0.82rem;color:var(--text);margin-top:6px">{{ r.prescription|truncatechars:100 }}</div>
+        </div>
+        {% empty %}<p style="color:var(--text-dim);font-size:0.875rem">No prescriptions yet.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+const records = [{% for r in health_records %}{
+    date: "{{ r.recorded_at|date:'M d' }}",
+    hr: {{ r.heart_rate|default:'null' }},
+    temp: {{ r.temperature|default:'null' }},
+    o2: {{ r.oxygen_saturation|default:'null' }}
+},{% endfor %}].reverse();
+
+if(records.length && document.getElementById('vitalsChart')){
+    new Chart(document.getElementById('vitalsChart'), {
+        type:'line',
+        data:{
+            labels: records.map(r=>r.date),
+            datasets:[
+                {label:'Heart Rate (bpm)',data:records.map(r=>r.hr),borderColor:'#ef4444',tension:0.4,pointRadius:4,borderWidth:2,fill:false},
+                {label:'Temperature (°C)',data:records.map(r=>r.temp),borderColor:'#f59e0b',tension:0.4,pointRadius:4,borderWidth:2,fill:false},
+                {label:'O₂ Sat (%)',data:records.map(r=>r.o2),borderColor:'#00d4ff',tension:0.4,pointRadius:4,borderWidth:2,fill:false},
+            ]
+        },
+        options:{
+            responsive:true,
+            plugins:{legend:{labels:{color:'#c9d1e0',font:{family:'DM Sans'}}}},
+            scales:{
+                x:{grid:{color:'rgba(31,45,69,0.5)'},ticks:{color:'#6b7280'}},
+                y:{grid:{color:'rgba(31,45,69,0.5)'},ticks:{color:'#6b7280'}}
+            }
+        }
+    });
+}
+</script>
+{% endblock %}

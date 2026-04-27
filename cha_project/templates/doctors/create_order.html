@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Create Order — CHA{% endblock %}
+{% block page_title %}Create Medical Order{% endblock %}
+{% block content %}
+<div style="max-width:700px">
+<div class="card">
+    <div class="card-title">🔬 New Medical Order</div>
+    <form method="post">{% csrf_token %}
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">Patient</label>
+                <select name="patient_id" class="form-control" required>
+                    <option value="">Select patient...</option>
+                    {% for p in patients %}
+                    <option value="{{ p.id }}">{{ p.get_full_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Order Type</label>
+                <select name="order_type" class="form-control" required>
+                    {% for val, label in order_types %}
+                    <option value="{{ val }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Priority</label>
+                <select name="priority" class="form-control">
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                    <option value="low">Low</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Department</label>
+                <select name="department_id" class="form-control">
+                    <option value="">Auto-assign</option>
+                    {% for d in departments %}
+                    <option value="{{ d.id }}">{{ d.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Clinical Description</label>
+            <textarea name="description" class="form-control" rows="4" placeholder="Clinical reason for this order, relevant history..." required></textarea>
+        </div>
+        <div style="display:flex;gap:12px">
+            <button type="submit" class="btn btn-primary">Create Order →</button>
+            <a href="{% url 'doctor_orders' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Emergency Cases — CHA{% endblock %}
+{% block page_title %}Active Emergency Cases{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <span style="color:var(--danger);font-size:0.875rem">{{ patients|length }} active case{{ patients|length|pluralize }}</span>
+    <a href="{% url 'register_emergency' %}" class="btn btn-danger">🚨 New Admission</a>
+</div>
+<div class="card">
+    {% if patients %}
+    <table class="data-table">
+        <thead><tr><th>Patient</th><th>Complaint</th><th>Severity</th><th>Vitals</th><th>Admitted</th><th>By</th></tr></thead>
+        <tbody>
+        {% for e in patients %}
+        <tr>
+            <td>
+                <div style="font-weight:500;color:var(--text-bright)">{{ e.first_name }} {{ e.last_name }}</div>
+                {% if e.date_of_birth %}<div style="font-size:0.78rem;color:var(--text-dim)">DOB: {{ e.date_of_birth }}</div>{% endif %}
+            </td>
+            <td style="max-width:200px">{{ e.chief_complaint|truncatechars:80 }}</td>
+            <td>
+                <span class="badge badge-{{ e.severity }}">{{ e.severity|title }}</span>
+                {% if e.severity == 'critical' %}<span class="pulse" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc2626;margin-left:6px"></span>{% endif %}
+            </td>
+            <td style="font-size:0.8rem;color:var(--text-dim)">
+                {% if e.initial_vitals.heart_rate %}❤ {{ e.initial_vitals.heart_rate }}<br>{% endif %}
+                {% if e.initial_vitals.blood_pressure %}BP: {{ e.initial_vitals.blood_pressure }}{% endif %}
+            </td>
+            <td style="color:var(--text-dim);font-size:0.82rem;white-space:nowrap">{{ e.registered_at|date:"M d, Y" }}<br>{{ e.registered_at|date:"H:i" }}</td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ e.registered_by.get_full_name|default:e.registered_by.username }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:48px;color:var(--text-dim)">
+        <div style="font-size:40px;margin-bottom:12px">✓</div>
+        <div>No active emergency cases</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

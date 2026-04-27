@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Emergency Dashboard — CHA{% endblock %}
+{% block page_title %}Emergency Services{% endblock %}
+{% block content %}
+<div style="display:flex;gap:16px;margin-bottom:28px">
+    <a href="{% url 'register_emergency' %}" class="btn btn-danger" style="font-size:1rem;padding:14px 28px">
+        🚨 Admit Emergency Patient
+    </a>
+    <a href="{% url 'emergency_list' %}" class="btn btn-secondary">View Active Cases</a>
+</div>
+<div class="card">
+    <div class="card-title">Recent Admissions (Your Cases)</div>
+    {% if recent_emergency %}
+    <table class="data-table">
+        <thead><tr><th>Patient</th><th>Complaint</th><th>Severity</th><th>Admitted</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for e in recent_emergency %}
+        <tr>
+            <td style="font-weight:500;color:var(--text-bright)">{{ e.first_name }} {{ e.last_name }}</td>
+            <td>{{ e.chief_complaint|truncatechars:60 }}</td>
+            <td><span class="badge badge-{{ e.severity }}">{{ e.severity|title }}</span></td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ e.registered_at|date:"M d H:i" }}</td>
+            <td>{% if e.is_resolved %}<span class="badge badge-completed">Resolved</span>{% else %}<span class="badge badge-pending pulse">Active</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}<p style="color:var(--text-dim)">No recent admissions.</p>{% endif %}
+</div>
+{% endblock %}

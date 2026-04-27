@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Documents — CHA{% endblock %}
+{% block page_title %}Secure Documents{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+    <a href="{% url 'upload_document' %}" class="btn btn-primary">🔒 Upload Document</a>
+</div>
+<div class="card">
+    {% if documents %}
+    <table class="data-table">
+        <thead><tr><th>Document</th><th>Type</th><th>Owner</th><th>Size</th><th>Uploaded</th><th>Security</th><th>Action</th></tr></thead>
+        <tbody>
+        {% for d in documents %}
+        <tr>
+            <td>
+                <div style="font-weight:500;color:var(--text-bright)">{{ d.title }}</div>
+                <div style="font-size:0.75rem;color:var(--text-dim);margin-top:2px;font-family:monospace">{{ d.original_filename }}</div>
+            </td>
+            <td><span class="badge badge-normal">{{ d.get_doc_type_display }}</span></td>
+            <td style="font-size:0.875rem">{{ d.owner.get_full_name }}</td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ d.file_size|filesizeformat }}</td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ d.uploaded_at|date:"M d, Y" }}</td>
+            <td>
+                {% if d.is_encrypted %}
+                <span style="color:var(--success);font-size:0.78rem">🔒 AES-256</span>
+                {% endif %}
+            </td>
+            <td><a href="{% url 'download_document' d.id %}" class="btn btn-secondary btn-sm">↓ Download</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:60px;color:var(--text-dim)">
+        <div style="font-size:48px;margin-bottom:16px">🗄</div>
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.1rem;color:var(--text-bright);margin-bottom:8px">No Documents Yet</div>
+        <p style="margin-bottom:20px">Upload encrypted medical documents securely.</p>
+        <a href="{% url 'upload_document' %}" class="btn btn-primary">Upload First Document</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

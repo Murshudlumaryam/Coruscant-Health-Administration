@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Medical Orders — CHA{% endblock %}
+{% block page_title %}Medical Orders{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+    {% if user.role == 'doctor' %}<a href="{% url 'create_order' %}" class="btn btn-primary">+ New Order</a>{% endif %}
+</div>
+<div class="card">
+    {% if orders %}
+    <table class="data-table">
+        <thead><tr><th>Order</th><th>Patient</th><th>Doctor</th><th>Priority</th><th>Status</th><th>Created</th></tr></thead>
+        <tbody>
+        {% for o in orders %}
+        <tr>
+            <td>
+                <div style="font-weight:500;color:var(--text-bright)">{{ o.get_order_type_display }}</div>
+                <div style="font-size:0.78rem;color:var(--text-dim);margin-top:2px">{{ o.description|truncatechars:60 }}</div>
+            </td>
+            <td>{{ o.patient.get_full_name }}</td>
+            <td style="color:var(--text-dim)">Dr. {{ o.doctor.get_full_name }}</td>
+            <td><span class="badge badge-{{ o.priority }}">{{ o.priority|title }}</span></td>
+            <td><span class="badge badge-{{ o.status }}">{{ o.get_status_display }}</span></td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ o.created_at|date:"M d, Y" }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}<div style="text-align:center;padding:40px;color:var(--text-dim)">No orders found.</div>{% endif %}
+</div>
+{% endblock %}

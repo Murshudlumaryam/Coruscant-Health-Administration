@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — CHA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root{--void:#060810;--deep:#0d1117;--border:#1f2d45;--text:#c9d1e0;--text-bright:#e8edf5;--text-dim:#6b7280;--accent:#00d4ff;--accent-2:#7c3aed}
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{font-family:'DM Sans',sans-serif;background:var(--void);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:40px 20px;position:relative}
+        .bg-grid{position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:0.25;pointer-events:none}
+        .wrap{position:relative;z-index:1;width:520px;animation:fadeUp 0.4s ease}
+        .hdr{text-align:center;margin-bottom:28px}
+        .logo-icon{width:44px;height:44px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border-radius:10px;display:inline-flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
+        h1{font-family:'Syne',sans-serif;font-weight:800;font-size:1.8rem;color:var(--text-bright);letter-spacing:-0.03em}
+        .sub{color:var(--text-dim);font-size:0.875rem;margin-top:6px}
+        .card{background:#0d1117;border:1px solid var(--border);border-radius:16px;padding:32px}
+        .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        label{display:block;font-size:0.75rem;font-weight:500;color:var(--text-dim);margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase}
+        input,select{width:100%;background:#060810;border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--text-bright);font-family:'DM Sans',sans-serif;font-size:0.875rem;outline:none;margin-bottom:0;transition:border-color 0.15s}
+        input:focus,select:focus{border-color:var(--accent)}
+        select option{background:#060810}
+        .fg{margin-bottom:16px}
+        .role-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0}
+        .role-btn{border:1px solid var(--border);background:#060810;color:var(--text-dim);border-radius:8px;padding:12px;font-family:'DM Sans',sans-serif;cursor:pointer;text-align:center;transition:all 0.15s;font-size:0.875rem}
+        .role-btn:hover,.role-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,212,255,0.06)}
+        .btn{width:100%;padding:13px;background:var(--accent);color:#060810;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;margin-top:20px}
+        .btn:hover{background:#00b8d9}
+        .link{text-align:center;margin-top:16px;font-size:0.875rem;color:var(--text-dim)}
+        .link a{color:var(--accent);text-decoration:none}
+        .info{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:8px;padding:12px 14px;font-size:0.82rem;color:var(--accent);margin-bottom:20px}
+        .alert{padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:14px}
+        .ae{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    </style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="wrap">
+    <div class="hdr">
+        <div class="logo-icon">⚕</div>
+        <h1>Request Access</h1>
+        <p class="sub">Create your CHA account — pending administrator approval</p>
+    </div>
+    <div class="card">
+        {% for msg in messages %}
+        <div class="alert ae">{{ msg }}</div>
+        {% endfor %}
+        <div class="info">ℹ Account requires administrator approval before first login</div>
+        <form method="post">{% csrf_token %}
+            <div class="grid2">
+                <div class="fg"><label>First Name</label><input type="text" name="first_name" required></div>
+                <div class="fg"><label>Last Name</label><input type="text" name="last_name" required></div>
+            </div>
+            <div class="fg"><label>Username</label><input type="text" name="username" required></div>
+            <div class="fg"><label>Email</label><input type="email" name="email" required></div>
+            <div class="fg"><label>Phone</label><input type="text" name="phone"></div>
+            <div class="fg"><label>Password</label><input type="password" name="password" required minlength="8"></div>
+            <div class="fg">
+                <label>Role</label>
+                <div class="role-toggle">
+                    <label class="role-btn" id="role-patient">
+                        <input type="radio" name="role" value="patient" style="display:none" checked>
+                        <div style="font-size:20px;margin-bottom:4px">🏥</div>
+                        Patient
+                    </label>
+                    <label class="role-btn" id="role-doctor">
+                        <input type="radio" name="role" value="doctor" style="display:none">
+                        <div style="font-size:20px;margin-bottom:4px">👨‍⚕️</div>
+                        Doctor
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="btn">Submit Application →</button>
+        </form>
+        <div class="link">Already have access? <a href="{% url 'login' %}">Sign in</a></div>
+    </div>
+</div>
+<script>
+document.querySelectorAll('input[name=role]').forEach(r=>{
+    r.closest('.role-btn').classList.toggle('active',r.checked);
+    r.addEventListener('change',()=>{
+        document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+        r.closest('.role-btn').classList.add('active');
+    });
+});
+</script>
+</body>
+</html>

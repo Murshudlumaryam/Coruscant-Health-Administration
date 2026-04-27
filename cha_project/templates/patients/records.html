@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Health Records — CHA{% endblock %}
+{% block page_title %}Health Records{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+    <a href="{% url 'upload_health' %}" class="btn btn-primary">+ Upload New Data</a>
+</div>
+{% if records %}
+<div class="card" style="margin-bottom:24px">
+    <div class="card-title">Vitals Chart</div>
+    <canvas id="vitalsChart" height="70"></canvas>
+</div>
+<div class="card">
+    <div class="card-title">All Records</div>
+    <table class="data-table">
+        <thead><tr><th>Date & Time</th><th>HR</th><th>Temp</th><th>BP</th><th>O₂</th><th>Glucose</th><th>Weight</th><th>Source</th></tr></thead>
+        <tbody>
+        {% for r in records %}
+        <tr>
+            <td style="color:var(--text-dim);font-size:0.82rem;white-space:nowrap">{{ r.recorded_at|date:"M d, Y H:i" }}</td>
+            <td>{% if r.heart_rate %}<span style="color:var(--danger)">{{ r.heart_rate }} <span style="color:var(--text-dim);font-size:0.75rem">bpm</span></span>{% else %}—{% endif %}</td>
+            <td>{% if r.temperature %}<span style="color:var(--warning)">{{ r.temperature }}°</span>{% else %}—{% endif %}</td>
+            <td>{% if r.blood_pressure_systolic %}{{ r.blood_pressure_systolic }}/{{ r.blood_pressure_diastolic }}{% else %}—{% endif %}</td>
+            <td>{% if r.oxygen_saturation %}<span style="color:var(--accent)">{{ r.oxygen_saturation }}%</span>{% else %}—{% endif %}</td>
+            <td>{% if r.glucose_level %}{{ r.glucose_level }}{% else %}—{% endif %}</td>
+            <td>{% if r.weight %}{{ r.weight }} kg{% else %}—{% endif %}</td>
+            <td><span class="badge badge-normal">{{ r.source }}</span></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:60px">
+    <div style="font-size:48px;margin-bottom:16px">📊</div>
+    <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;color:var(--text-bright);margin-bottom:8px">No Health Records Yet</div>
+    <p style="color:var(--text-dim);margin-bottom:20px">Start tracking your health by uploading your first reading.</p>
+    <a href="{% url 'upload_health' %}" class="btn btn-primary">Upload First Reading</a>
+</div>
+{% endif %}
+{% endblock %}
+{% block extra_scripts %}
+<script>
+const data = [{% for r in records_data %}{d:"{{ r.recorded_at }}",hr:{{ r.heart_rate|default:'null' }},temp:{{ r.temperature|default:'null' }},o2:{{ r.oxygen_saturation|default:'null' }}},{% endfor %}].reverse().slice(-20);
+if(data.length && document.getElementById('vitalsChart')){
+    new Chart(document.getElementById('vitalsChart'),{
+        type:'line',
+        data:{labels:data.map(r=>new Date(r.d).toLocaleDateString()),
+        datasets:[
+            {label:'Heart Rate',data:data.map(r=>r.hr),borderColor:'#ef4444',tension:0.4,fill:false,pointRadius:3,borderWidth:2},
+            {label:'Temperature',data:data.map(r=>r.temp),borderColor:'#f59e0b',tension:0.4,fill:false,pointRadius:3,borderWidth:2},
+            {label:'O₂ Sat',data:data.map(r=>r.o2),borderColor:'#00d4ff',tension:0.4,fill:false,pointRadius:3,borderWidth:2},
+        ]},
+        options:{responsive:true,plugins:{legend:{labels:{color:'#c9d1e0'}}},scales:{x:{grid:{color:'rgba(31,45,69,0.5)'},ticks:{color:'#6b7280'}},y:{grid:{color:'rgba(31,45,69,0.5)'},ticks:{color:'#6b7280'}}}}
+    });
+}
+</script>
+{% endblock %}

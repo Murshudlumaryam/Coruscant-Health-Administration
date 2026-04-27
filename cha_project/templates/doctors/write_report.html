@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Write Report — CHA{% endblock %}
+{% block page_title %}Write Medical Report{% endblock %}
+{% block content %}
+<div style="max-width:760px">
+<div class="card">
+    <div class="card-title">📝 New Medical Report</div>
+    <form method="post">{% csrf_token %}
+        <div class="form-group">
+            <label class="form-label">Patient</label>
+            <select name="patient_id" class="form-control" required>
+                <option value="">Select patient...</option>
+                {% for p in patients %}
+                <option value="{{ p.id }}">{{ p.get_full_name }} ({{ p.username }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Report Title</label>
+            <input type="text" name="title" class="form-control" placeholder="e.g. Follow-up Consultation — Hypertension" required>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Diagnosis</label>
+            <textarea name="diagnosis" class="form-control" rows="4" placeholder="Clinical findings and diagnosis..." required></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Prescription / Treatment Plan</label>
+            <textarea name="prescription" class="form-control" rows="4" placeholder="Medications, dosages, lifestyle recommendations..."></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Doctor's Notes</label>
+            <textarea name="notes" class="form-control" rows="3" placeholder="Internal notes (optional)..."></textarea>
+        </div>
+        <div class="form-group" style="display:flex;align-items:center;gap:10px">
+            <input type="checkbox" name="visible" id="visible" checked style="width:auto;margin-bottom:0">
+            <label for="visible" style="text-transform:none;font-size:0.875rem;color:var(--text);cursor:pointer;margin-bottom:0">Visible to patient</label>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px">
+            <button type="submit" class="btn btn-primary">Submit Report →</button>
+            <a href="{% url 'doctor_reports' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}

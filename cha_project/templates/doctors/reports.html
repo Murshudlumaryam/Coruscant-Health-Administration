@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Medical Reports — CHA{% endblock %}
+{% block page_title %}Medical Reports{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:flex-end;margin-bottom:20px">
+    {% if user.role == 'doctor' %}
+    <a href="{% url 'write_report' %}" class="btn btn-primary">+ New Report</a>
+    {% endif %}
+</div>
+<div class="card">
+    {% if reports %}
+    <table class="data-table">
+        <thead><tr><th>Title</th><th>Patient</th><th>Doctor</th><th>Date</th><th>Visibility</th></tr></thead>
+        <tbody>
+        {% for r in reports %}
+        <tr>
+            <td>
+                <div style="font-weight:500;color:var(--text-bright)">{{ r.title }}</div>
+                <div style="font-size:0.78rem;color:var(--text-dim);margin-top:3px">{{ r.diagnosis|truncatechars:80 }}</div>
+            </td>
+            <td>{{ r.patient.get_full_name }}</td>
+            <td style="color:var(--text-dim)">Dr. {{ r.doctor.get_full_name }}</td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ r.created_at|date:"M d, Y" }}</td>
+            <td>{% if r.is_visible_to_patient %}<span class="badge badge-completed">Patient Visible</span>{% else %}<span class="badge badge-cancelled">Private</span>{% endif %}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:40px;color:var(--text-dim)">No reports found.</div>
+    {% endif %}
+</div>
+{% endblock %}

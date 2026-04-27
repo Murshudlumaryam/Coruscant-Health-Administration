@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Emergency Registration — CHA{% endblock %}
+{% block page_title %}🚨 Emergency Patient Admission{% endblock %}
+{% block content %}
+<div style="max-width:680px">
+<div style="background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.3);border-radius:12px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:10px;color:#ef4444">
+    <span style="font-size:18px">🚨</span>
+    <span style="font-weight:500">Emergency Intake Mode — Minimal Fields Required</span>
+</div>
+<div class="card">
+    <form method="post">{% csrf_token %}
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">First Name *</label>
+                <input type="text" name="first_name" class="form-control" required autofocus>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Last Name *</label>
+                <input type="text" name="last_name" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Date of Birth</label>
+                <input type="date" name="date_of_birth" class="form-control">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Gender</label>
+                <select name="gender" class="form-control">
+                    <option value="O">Unknown</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label" style="color:var(--danger)">Chief Complaint *</label>
+            <textarea name="chief_complaint" class="form-control" rows="3" placeholder="Primary reason for emergency visit..." required style="border-color:rgba(239,68,68,0.4)"></textarea>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Severity</label>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+                {% for val, label in severity_choices %}
+                <label style="border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--surface)">
+                    <input type="radio" name="severity" value="{{ val }}" {% if val == 'moderate' %}checked{% endif %} style="display:none">
+                    <div style="font-size:0.875rem;font-weight:500">{{ label }}</div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="form-group">
+                <label class="form-label">Heart Rate (bpm)</label>
+                <input type="number" name="heart_rate" class="form-control" placeholder="e.g. 95">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Blood Pressure</label>
+                <input type="text" name="blood_pressure" class="form-control" placeholder="e.g. 140/90">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Notes</label>
+            <textarea name="notes" class="form-control" rows="2" placeholder="Any relevant information..."></textarea>
+        </div>
+        <div style="display:flex;gap:12px">
+            <button type="submit" class="btn btn-danger" style="font-size:1rem;padding:12px 24px">🚨 Admit Patient →</button>
+            <a href="{% url 'emergency_list' %}" class="btn btn-secondary">View Active Cases</a>
+        </div>
+    </form>
+</div>
+</div>
+<script>
+document.querySelectorAll('input[name=severity]').forEach(r=>{
+    const colors={'critical':'#dc2626','severe':'#ef4444','moderate':'#f59e0b','minor':'#10b981'};
+    const lbl=r.closest('label');
+    r.addEventListener('change',()=>{
+        document.querySelectorAll('input[name=severity]').forEach(x=>{
+            x.closest('label').style.borderColor='var(--border)';
+            x.closest('label').style.background='var(--surface)';
+        });
+        lbl.style.borderColor=colors[r.value];
+        lbl.style.background=colors[r.value]+'18';
+    });
+    if(r.checked){lbl.style.borderColor=colors[r.value];lbl.style.background=colors[r.value]+'18';}
+});
+</script>
+{% endblock %}

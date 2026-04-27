@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}Order Queue — CHA{% endblock %}
+{% block page_title %}Department Order Queue{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title">📥 Active Orders</div>
+    {% if orders %}
+    <table class="data-table">
+        <thead><tr><th>Order Type</th><th>Patient</th><th>Requesting Doctor</th><th>Priority</th><th>Status</th><th>Created</th><th>Action</th></tr></thead>
+        <tbody>
+        {% for o in orders %}
+        <tr>
+            <td>
+                <div style="font-weight:500;color:var(--text-bright)">{{ o.get_order_type_display }}</div>
+                <div style="font-size:0.78rem;color:var(--text-dim);margin-top:2px">{{ o.description|truncatechars:50 }}</div>
+            </td>
+            <td>{{ o.patient.get_full_name }}</td>
+            <td style="color:var(--text-dim)">Dr. {{ o.doctor.get_full_name }}</td>
+            <td><span class="badge badge-{{ o.priority }}">{{ o.priority|title }}</span></td>
+            <td><span class="badge badge-{{ o.status }}">{{ o.get_status_display }}</span></td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ o.created_at|date:"M d H:i" }}</td>
+            <td><a href="{% url 'update_order' o.id %}" class="btn btn-warning btn-sm">Process →</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:48px;color:var(--text-dim)">
+        <div style="font-size:40px;margin-bottom:12px">✓</div>
+        <div style="font-size:1rem;color:var(--text-bright)">No active orders</div>
+        <div style="font-size:0.875rem;margin-top:4px">All orders have been processed</div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

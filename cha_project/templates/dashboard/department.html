@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Department Dashboard — CHA{% endblock %}
+{% block page_title %}Department Order Queue{% endblock %}
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card" style="--accent-color:#f59e0b">
+        <div class="stat-icon" style="background:rgba(245,158,11,0.1)">📥</div>
+        <div class="stat-value">{{ pending_orders|length }}</div>
+        <div class="stat-label">Pending Orders</div>
+    </div>
+    <div class="stat-card" style="--accent-color:#00d4ff">
+        <div class="stat-icon" style="background:rgba(0,212,255,0.1)">⚙</div>
+        <div class="stat-value">{{ in_progress_orders|length }}</div>
+        <div class="stat-label">In Progress</div>
+    </div>
+</div>
+<div class="card" style="margin-bottom:24px">
+    <div class="card-title">🟡 Pending Orders</div>
+    {% if pending_orders %}
+    <table class="data-table">
+        <thead><tr><th>Type</th><th>Patient</th><th>Doctor</th><th>Priority</th><th>Created</th><th>Action</th></tr></thead>
+        <tbody>
+        {% for o in pending_orders %}
+        <tr>
+            <td style="font-weight:500;color:var(--text-bright)">{{ o.get_order_type_display }}</td>
+            <td>{{ o.patient.get_full_name }}</td>
+            <td>Dr. {{ o.doctor.get_full_name }}</td>
+            <td><span class="badge badge-{{ o.priority }}">{{ o.priority|title }}</span></td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ o.created_at|date:"M d H:i" }}</td>
+            <td><a href="{% url 'update_order' o.id %}" class="btn btn-warning btn-sm">Process →</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}<p style="color:var(--text-dim)">No pending orders.</p>{% endif %}
+</div>
+<div class="card">
+    <div class="card-title">🔵 In Progress</div>
+    {% if in_progress_orders %}
+    <table class="data-table">
+        <thead><tr><th>Type</th><th>Patient</th><th>Priority</th><th>Action</th></tr></thead>
+        <tbody>
+        {% for o in in_progress_orders %}
+        <tr>
+            <td style="font-weight:500;color:var(--text-bright)">{{ o.get_order_type_display }}</td>
+            <td>{{ o.patient.get_full_name }}</td>
+            <td><span class="badge badge-{{ o.priority }}">{{ o.priority|title }}</span></td>
+            <td><a href="{% url 'update_order' o.id %}" class="btn btn-secondary btn-sm">Update</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}<p style="color:var(--text-dim)">No orders in progress.</p>{% endif %}
+</div>
+{% endblock %}

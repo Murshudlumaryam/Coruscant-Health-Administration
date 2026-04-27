@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block title %}Patient Detail — CHA{% endblock %}
+{% block page_title %}Patient Record{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<div style="display:flex;align-items:center;gap:20px;margin-bottom:28px;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:12px">
+    <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#00d4ff);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:white;flex-shrink:0">
+        {{ patient.first_name|first|upper }}{{ patient.last_name|first|upper }}
+    </div>
+    <div>
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.4rem;color:var(--text-bright)">{{ patient.get_full_name }}</div>
+        <div style="color:var(--text-dim);font-size:0.875rem;margin-top:4px">{{ patient.email }} {% if patient.phone %}· {{ patient.phone }}{% endif %}</div>
+        <div style="margin-top:8px;display:flex;gap:8px">
+            <a href="{% url 'write_report' %}?patient={{ patient.id }}" class="btn btn-primary btn-sm">✏ Write Report</a>
+            <a href="{% url 'create_order' %}?patient={{ patient.id }}" class="btn btn-secondary btn-sm">🔬 Create Order</a>
+        </div>
+    </div>
+</div>
+
+{% if records %}
+<div class="card" style="margin-bottom:24px">
+    <div class="card-title">Health Vitals History</div>
+    <canvas id="vitalsChart" height="70"></canvas>
+</div>
+{% endif %}
+
+<div class="grid-2" style="margin-bottom:24px">
+    <div class="card">
+        <div class="card-title">Recent Health Records</div>
+        {% for r in records|slice:":8" %}
+        <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between">
+                <div style="font-size:0.8rem;color:var(--text-dim)">{{ r.recorded_at|date:"M d, Y H:i" }}</div>
+                <span class="badge badge-normal" style="font-size:0.68rem">{{ r.source }}</span>
+            </div>
+            <div style="font-size:0.875rem;color:var(--text);margin-top:4px">
+                {% if r.heart_rate %}❤ {{ r.heart_rate }}bpm {% endif %}
+                {% if r.temperature %}🌡 {{ r.temperature }}°C {% endif %}
+                {% if r.oxygen_saturation %}O₂ {{ r.oxygen_saturation }}% {% endif %}
+                {% if r.blood_pressure_systolic %}BP {{ r.blood_pressure_systolic }}/{{ r.blood_pressure_diastolic }}{% endif %}
+            </div>
+        </div>
+        {% empty %}<p style="color:var(--text-dim);font-size:0.875rem">No records yet.</p>{% endfor %}
+    </div>
+    <div class="card">
+        <div class="card-title">Reports & Prescriptions</div>
+        {% for r in reports %}
+        <div style="padding:10px 0;border-bottom:1px solid var(--border)">
+            <div style="font-weight:500;color:var(--text-bright);font-size:0.875rem">{{ r.title }}</div>
+            <div style="font-size:0.78rem;color:var(--text-dim);margin-top:3px">{{ r.created_at|date:"M d, Y" }} · Dr. {{ r.doctor.get_full_name }}</div>
+            <div style="font-size:0.82rem;color:var(--text);margin-top:5px">{{ r.diagnosis|truncatechars:100 }}</div>
+        </div>
+        {% empty %}<p style="color:var(--text-dim);font-size:0.875rem">No reports yet.</p>{% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Medical Orders</div>
+    {% if orders %}
+    <table class="data-table">
+        <thead><tr><th>Type</th><th>Priority</th><th>Status</th><th>Date</th></tr></thead>
+        <tbody>
+        {% for o in orders %}
+        <tr>
+            <td style="font-weight:500;color:var(--text-bright)">{{ o.get_order_type_display }}</td>
+            <td><span class="badge badge-{{ o.priority }}">{{ o.priority|title }}</span></td>
+            <td><span class="badge badge-{{ o.status }}">{{ o.get_status_display }}</span></td>
+            <td style="color:var(--text-dim);font-size:0.82rem">{{ o.created_at|date:"M d, Y" }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}<p style="color:var(--text-dim);font-size:0.875rem">No orders yet.</p>{% endif %}
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+const recs = [{% for r in records %}{d:"{{ r.recorded_at|date:'M d' }}",hr:{{ r.heart_rate|default:'null' }},temp:{{ r.temperature|default:'null' }},o2:{{ r.oxygen_saturation|default:'null' }}},{% endfor %}].reverse().slice(-15);
+if(recs.length && document.getElementById('vitalsChart')){
+    new Chart(document.getElementById('vitalsChart'),{type:'line',data:{labels:recs.map(r=>r.d),datasets:[
+        {label:'Heart Rate',data:recs.map(r=>r.hr),borderColor:'#ef4444',tension:0.4,fill:false,pointRadius:3,borderWidth:2},
+        {label:'Temp',data:recs.map(r=>r.temp),borderColor:'#f59e0b',tension:0.4,fill:false,pointRadius:3,borderWidth:2},
+        {label:'O₂ Sat',data:recs.map(r=>r.o2),borderColor:'#00d4ff',tension:0.4,fill:false,pointRadius:3,borderWidth:2},
+    ]},options:{responsive:true,plugins:{legend:{labels:{color:'#c9d1e0'}}},scales:{x:{grid:{color:'rgba(31,45,69,0.5)'},ticks:{color:'#6b7280'}},y:{grid:{color:'rgba(31,45,69,0.5)'},ticks:{color:'#6b7280'}}}}});
+}
+</script>
+{% endblock %}

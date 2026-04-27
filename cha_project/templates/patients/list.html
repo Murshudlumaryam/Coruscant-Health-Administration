@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}All Patients — CHA{% endblock %}
+{% block page_title %}Patient Registry{% endblock %}
+{% block content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+    <p style="color:var(--text-dim);font-size:0.875rem">{{ patients|length }} registered patient{{ patients|length|pluralize }}</p>
+</div>
+<div class="card">
+    {% if patients %}
+    <table class="data-table">
+        <thead><tr><th>Patient</th><th>Contact</th><th>Phone</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>
+        {% for p in patients %}
+        <tr>
+            <td>
+                <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem;color:white;flex-shrink:0">
+                        {{ p.first_name|first|upper }}{{ p.last_name|first|upper }}
+                    </div>
+                    <div>
+                        <div style="font-weight:500;color:var(--text-bright);font-size:0.875rem">{{ p.get_full_name }}</div>
+                        <div style="font-size:0.75rem;color:var(--text-dim)">{{ p.username }}</div>
+                    </div>
+                </div>
+            </td>
+            <td style="color:var(--text-dim);font-size:0.875rem">{{ p.email }}</td>
+            <td style="color:var(--text-dim);font-size:0.875rem">{{ p.phone|default:"—" }}</td>
+            <td><span class="badge badge-completed">Active</span></td>
+            <td>
+                {% if user.role == 'doctor' or user.role == 'administrator' or user.is_superuser %}
+                <a href="{% url 'patient_detail' p.id %}" class="btn btn-secondary btn-sm">View →</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:40px;color:var(--text-dim)">No patients registered yet.</div>
+    {% endif %}
+</div>
+{% endblock %}
