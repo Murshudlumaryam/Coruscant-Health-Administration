@@ -1,28 +1,22 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import HealthRecord, PatientProfile
+from .forms import HealthRecordForm
+from .models import HealthRecord
 from accounts.models import User
 
 @login_required
 def upload_health_data(request):
+    form = HealthRecordForm(request.POST or None)
     if request.method == 'POST':
-        data = {
-            'patient': request.user,
-            'heart_rate': request.POST.get('heart_rate') or None,
-            'temperature': request.POST.get('temperature') or None,
-            'blood_pressure_systolic': request.POST.get('bp_systolic') or None,
-            'blood_pressure_diastolic': request.POST.get('bp_diastolic') or None,
-            'oxygen_saturation': request.POST.get('oxygen_saturation') or None,
-            'glucose_level': request.POST.get('glucose_level') or None,
-            'weight': request.POST.get('weight') or None,
-            'notes': request.POST.get('notes', ''),
-            'source': request.POST.get('source', 'manual'),
-        }
-        HealthRecord.objects.create(**data)
-        messages.success(request, 'Health data uploaded successfully!')
-        return redirect('patient_records')
-    return render(request, 'patients/upload_health.html')
+        if form.is_valid():
+            record = form.save(commit=False)
+            record.patient = request.user
+            record.save()
+            messages.success(request, 'Health data uploaded successfully!')
+            return redirect('patient_records')
+        messages.error(request, next(iter(form.errors.values()))[0])
+    return render(request, 'patients/upload_health.html', {'form': form})
 
 @login_required
 def patient_records(request):

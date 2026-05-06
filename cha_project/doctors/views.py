@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import MedicalReport, MedicalOrder, DoctorProfile
+from .forms import MedicalOrderForm, MedicalReportForm
+from .models import MedicalReport, MedicalOrder
 from patients.models import HealthRecord
 from accounts.models import User
-from departments.models import Department
 
 @login_required
 def write_report(request):
@@ -12,23 +12,19 @@ def write_report(request):
         messages.error(request, 'Permission denied.')
         return redirect('dashboard')
     
+    form = MedicalReportForm(request.POST or None)
     if request.method == 'POST':
-        patient_id = request.POST.get('patient_id')
-        patient = get_object_or_404(User, id=patient_id, role='patient')
-        MedicalReport.objects.create(
-            doctor=request.user,
-            patient=patient,
-            title=request.POST.get('title'),
-            diagnosis=request.POST.get('diagnosis'),
-            prescription=request.POST.get('prescription', ''),
-            notes=request.POST.get('notes', ''),
-            is_visible_to_patient=request.POST.get('visible', 'on') == 'on',
-        )
-        messages.success(request, 'Report written successfully!')
-        return redirect('doctor_reports')
-    
-    patients = User.objects.filter(role='patient', is_approved=True)
-    return render(request, 'doctors/write_report.html', {'patients': patients})
+        if form.is_valid():
+            report = form.save(commit=False)
+            report.doctor = request.user
+            report.patient = form.cleaned_data['patient']
+            report.is_visible_to_patient = form.cleaned_data['visible']
+            report.save()
+            messages.success(request, 'Report written successfully!')
+            return redirect('doctor_reports')
+        messages.error(request, next(iter(form.errors.values()))[0])
+
+    return render(request, 'doctors/write_report.html', {'form': form})
 
 @login_required
 def doctor_reports(request):
@@ -44,28 +40,19 @@ def create_order(request):
         messages.error(request, 'Permission denied.')
         return redirect('dashboard')
     
+    form = MedicalOrderForm(request.POST or None)
     if request.method == 'POST':
-        patient_id = request.POST.get('patient_id')
-        patient = get_object_or_404(User, id=patient_id, role='patient')
-        dept_id = request.POST.get('department_id')
-        dept = Department.objects.filter(id=dept_id).first() if dept_id else None
-        MedicalOrder.objects.create(
-            doctor=request.user,
-            patient=patient,
-            order_type=request.POST.get('order_type'),
-            description=request.POST.get('description'),
-            priority=request.POST.get('priority', 'normal'),
-            department=dept,
-        )
-        messages.success(request, 'Medical order created!')
-        return redirect('doctor_orders')
-    
-    patients = User.objects.filter(role='patient', is_approved=True)
-    departments = Department.objects.filter(is_active=True)
-    order_types = MedicalOrder.ORDER_TYPES
-    return render(request, 'doctors/create_order.html', {
-        'patients': patients, 'departments': departments, 'order_types': order_types
-    })
+        if form.is_valid():
+            order = form.save(commit=False)
+            order.doctor = request.user
+            order.patient = form.cleaned_data['patient']
+            order.department = form.cleaned_data['department']
+            order.save()
+            messages.success(request, 'Medical order created!')
+            return redirect('doctor_orders')
+        messages.error(request, next(iter(form.errors.values()))[0])
+
+    return render(request, 'doctors/create_order.html', {'form': form})
 
 @login_required
 def doctor_orders(request):

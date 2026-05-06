@@ -1,63 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In — CHA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    <style>
-        :root{--void:#060810;--deep:#0d1117;--border:#1f2d45;--text:#c9d1e0;--text-bright:#e8edf5;--text-dim:#6b7280;--accent:#00d4ff;--accent-2:#7c3aed}
-        *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'DM Sans',sans-serif;background:var(--void);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
-        .bg-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:0.3}
-        .bg-glow{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,212,255,0.08) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%)}
-        .wrap{position:relative;z-index:1;width:420px;animation:fadeUp 0.4s ease}
-        .hdr{text-align:center;margin-bottom:32px}
-        .logo{display:inline-flex;align-items:center;gap:12px;margin-bottom:20px}
-        .logo-icon{width:48px;height:48px;background:linear-gradient(135deg,var(--accent),var(--accent-2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px}
-        h1{font-family:'Syne',sans-serif;font-weight:800;font-size:2rem;color:var(--text-bright);letter-spacing:-0.04em}
-        p{color:var(--text-dim);font-size:0.875rem;margin-top:6px}
-        .card{background:#0d1117;border:1px solid var(--border);border-radius:16px;padding:32px}
-        label{display:block;font-size:0.75rem;font-weight:500;color:var(--text-dim);margin-bottom:7px;letter-spacing:0.04em;text-transform:uppercase}
-        input{width:100%;background:#060810;border:1px solid var(--border);border-radius:8px;padding:12px 16px;color:var(--text-bright);font-family:'DM Sans',sans-serif;font-size:0.9rem;outline:none;margin-bottom:18px;transition:border-color 0.15s}
-        input:focus{border-color:var(--accent)}
-        .btn{width:100%;padding:13px;background:var(--accent);color:#060810;border:none;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:all 0.15s}
-        .btn:hover{background:#00b8d9}
-        .link{text-align:center;margin-top:18px;font-size:0.875rem;color:var(--text-dim)}
-        .link a{color:var(--accent);text-decoration:none}
-        .alert{padding:10px 14px;border-radius:8px;font-size:0.85rem;margin-bottom:16px}
-        .ae{background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444}
-        .aw{background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);color:#f59e0b}
-        .as{background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);color:#10b981}
-        @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    </style>
-</head>
-<body>
-<div class="bg-grid"></div><div class="bg-glow"></div>
-<div class="wrap">
-    <div class="hdr">
-        <div class="logo">
-            <div class="logo-icon">⚕</div>
-            <div style="text-align:left">
-                <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;color:var(--text-bright)">CHA</div>
-                <div style="font-size:0.65rem;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase">Coruscant Health</div>
-            </div>
-        </div>
-        <h1>Welcome back</h1>
-        <p>Sign in to your health administration account</p>
-    </div>
-    <div class="card">
+{% extends 'base.html' %}
+{% block title %}Login | CHA{% endblock %}
+{% block public_content %}
+<div class="public-page">
+    <div class="public-card">
+        <h1 style="margin-top:0;margin-bottom:8px;font-size:28px">CHA Login</h1>
+        <p style="margin-top:0;margin-bottom:20px;color:var(--muted)">Sign in to access the medical management system.</p>
+
         {% for msg in messages %}
-        <div class="alert {% if msg.tags == 'error' %}ae{% elif msg.tags == 'warning' %}aw{% else %}as{% endif %}">{{ msg }}</div>
+        <div class="alert alert-{% if msg.tags == 'error' %}error{% elif msg.tags == 'warning' %}warning{% else %}success{% endif %}">
+            {{ msg }}
+        </div>
         {% endfor %}
-        <form method="post">{% csrf_token %}
-            <label>Username</label>
-            <input type="text" name="username" placeholder="Your username" required autofocus>
-            <label>Password</label>
-            <input type="password" name="password" placeholder="Your password" required>
-            <button type="submit" class="btn">Sign In →</button>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label class="form-label">Username</label>
+                <input type="text" name="username" value="{{ form.username.value|default:'' }}" required autofocus>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
         </form>
-        <div class="link">No account? <a href="{% url 'register' %}">Request access</a></div>
+
+        <p style="margin-top:18px;margin-bottom:0;font-size:14px;color:var(--muted)">
+            No account? <a href="{% url 'register' %}">Register here</a>
+        </p>
     </div>
 </div>
-</body>
-</html>
+{% endblock %}

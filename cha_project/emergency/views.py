@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from .forms import EmergencyRegistrationForm
 from .models import EmergencyPatient
 
 @login_required
@@ -9,25 +10,17 @@ def register_emergency(request):
         messages.error(request, 'Permission denied.')
         return redirect('dashboard')
     
+    form = EmergencyRegistrationForm(request.POST or None)
     if request.method == 'POST':
-        EmergencyPatient.objects.create(
-            first_name=request.POST.get('first_name'),
-            last_name=request.POST.get('last_name'),
-            date_of_birth=request.POST.get('date_of_birth') or None,
-            gender=request.POST.get('gender', 'O'),
-            chief_complaint=request.POST.get('chief_complaint'),
-            severity=request.POST.get('severity', 'moderate'),
-            registered_by=request.user,
-            initial_vitals={
-                'heart_rate': request.POST.get('heart_rate', ''),
-                'blood_pressure': request.POST.get('blood_pressure', ''),
-                'temperature': request.POST.get('temperature', ''),
-            },
-            notes=request.POST.get('notes', ''),
-        )
-        messages.success(request, 'Emergency patient registered!')
-        return redirect('emergency_list')
-    return render(request, "emergency/register.html", {"severity_choices": EP.SEVERITY})
+        if form.is_valid():
+            emergency_case = form.save(commit=False)
+            emergency_case.registered_by = request.user
+            emergency_case.initial_vitals = form.build_initial_vitals()
+            emergency_case.save()
+            messages.success(request, 'Emergency patient registered!')
+            return redirect('emergency_list')
+        messages.error(request, next(iter(form.errors.values()))[0])
+    return render(request, "emergency/register.html", {"form": form, "severity_choices": EP.SEVERITY})
 
 @login_required
 def emergency_list(request):

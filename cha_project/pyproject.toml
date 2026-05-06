@@ -1,0 +1,10 @@
+[project]
+name = "coruscant-health-administration"
+version = "0.1.0"
+requires-python = ">=3.12"
+
+[project.scripts]
+app = "cha_project.wsgi:application"
+
+[tool.vercel.scripts]
+build = "python manage.py migrate && python manage.py collectstatic --noinput"

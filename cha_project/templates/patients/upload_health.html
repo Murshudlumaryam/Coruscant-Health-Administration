@@ -1,58 +1,60 @@
 {% extends 'base.html' %}
-{% block title %}Upload Health Data — CHA{% endblock %}
+{% block title %}Upload Health Data | CHA{% endblock %}
 {% block page_title %}Upload Health Data{% endblock %}
 {% block content %}
 <div style="max-width:700px">
-<div class="card">
-    <div class="card-title">📊 Submit Health Readings</div>
-    <p style="color:var(--text-dim);font-size:0.875rem;margin-bottom:24px">Enter your device readings or manual measurements below.</p>
-    <form method="post">{% csrf_token %}
-        <div class="grid-2">
-            <div class="form-group">
-                <label class="form-label">Heart Rate (bpm)</label>
-                <input type="number" name="heart_rate" class="form-control" placeholder="e.g. 72" min="30" max="250" step="0.1">
+    <div class="card">
+        <div class="card-title">Submit health readings</div>
+        <p style="color:var(--text-soft);font-size:0.94rem;margin-bottom:24px">Enter device readings or a quick manual update for today's patient log.</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Heart Rate (bpm)</label>
+                    <input type="number" name="heart_rate" class="form-control" value="{{ form.heart_rate.value|default:'' }}" placeholder="e.g. 72" min="30" max="250" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Temperature (C)</label>
+                    <input type="number" name="temperature" class="form-control" value="{{ form.temperature.value|default:'' }}" placeholder="e.g. 36.6" min="30" max="45" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">BP Systolic (mmHg)</label>
+                    <input type="number" name="blood_pressure_systolic" class="form-control" value="{{ form.blood_pressure_systolic.value|default:'' }}" placeholder="e.g. 120" min="60" max="250">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">BP Diastolic (mmHg)</label>
+                    <input type="number" name="blood_pressure_diastolic" class="form-control" value="{{ form.blood_pressure_diastolic.value|default:'' }}" placeholder="e.g. 80" min="40" max="160">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Oxygen Saturation (%)</label>
+                    <input type="number" name="oxygen_saturation" class="form-control" value="{{ form.oxygen_saturation.value|default:'' }}" placeholder="e.g. 98" min="50" max="100" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Glucose Level (mg/dL)</label>
+                    <input type="number" name="glucose_level" class="form-control" value="{{ form.glucose_level.value|default:'' }}" placeholder="e.g. 90" min="20" max="600" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weight (kg)</label>
+                    <input type="number" name="weight" class="form-control" value="{{ form.weight.value|default:'' }}" placeholder="e.g. 70" min="1" max="500" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data Source</label>
+                    <select name="source" class="form-control">
+                        {% for value, label in form.fields.source.choices %}
+                        <option value="{{ value }}" {% if form.source.value|default:'manual' == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
             <div class="form-group">
-                <label class="form-label">Temperature (°C)</label>
-                <input type="number" name="temperature" class="form-control" placeholder="e.g. 36.6" min="30" max="45" step="0.1">
+                <label class="form-label">Additional Notes</label>
+                <textarea name="notes" class="form-control" placeholder="Symptoms, context, or anything your doctor should know...">{{ form.notes.value|default:'' }}</textarea>
             </div>
-            <div class="form-group">
-                <label class="form-label">BP Systolic (mmHg)</label>
-                <input type="number" name="bp_systolic" class="form-control" placeholder="e.g. 120" min="60" max="250">
+            <div style="display:flex;gap:12px;margin-top:8px">
+                <button type="submit" class="btn btn-primary">Submit reading</button>
+                <a href="{% url 'patient_records' %}" class="btn btn-secondary">View records</a>
             </div>
-            <div class="form-group">
-                <label class="form-label">BP Diastolic (mmHg)</label>
-                <input type="number" name="bp_diastolic" class="form-control" placeholder="e.g. 80" min="40" max="160">
-            </div>
-            <div class="form-group">
-                <label class="form-label">O₂ Saturation (%)</label>
-                <input type="number" name="oxygen_saturation" class="form-control" placeholder="e.g. 98" min="50" max="100" step="0.1">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Glucose Level (mg/dL)</label>
-                <input type="number" name="glucose_level" class="form-control" placeholder="e.g. 90" min="20" max="600" step="0.1">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Weight (kg)</label>
-                <input type="number" name="weight" class="form-control" placeholder="e.g. 70" min="1" max="500" step="0.1">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Data Source</label>
-                <select name="source" class="form-control">
-                    <option value="manual">Manual Entry</option>
-                    <option value="device">Device Upload</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Additional Notes</label>
-            <textarea name="notes" class="form-control" placeholder="Any symptoms, context, or observations..."></textarea>
-        </div>
-        <div style="display:flex;gap:12px;margin-top:8px">
-            <button type="submit" class="btn btn-primary">Submit Reading →</button>
-            <a href="{% url 'patient_records' %}" class="btn btn-secondary">View Records</a>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
 </div>
 {% endblock %}

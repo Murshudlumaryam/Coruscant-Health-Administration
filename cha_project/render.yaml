@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: coruscant-health-administration
+    runtime: python
+    plan: free
+    buildCommand: "bash build.sh"
+    startCommand: "gunicorn cha_project.wsgi:application --bind 0.0.0.0:$PORT --log-file -"
+    healthCheckPath: /health/
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: false
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: coruscant-health-db
+          property: connectionString
+
+databases:
+  - name: coruscant-health-db
+    plan: free
+    databaseName: coruscant_health
+    user: coruscant_health_user

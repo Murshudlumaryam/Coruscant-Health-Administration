@@ -69,6 +69,11 @@ class AuthViewTest(TestCase):
         resp = self.client.get(reverse('dashboard'))
         self.assertRedirects(resp, '/accounts/login/?next=/dashboard/')
 
+    def test_health_check(self):
+        resp = self.client.get(reverse('health_check'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content, b'ok')
+
 class HealthRecordTest(TestCase):
     def setUp(self):
         self.patient = User.objects.create_user('pt', password='x', role='patient', is_approved=True)
@@ -106,7 +111,7 @@ class MedicalReportTest(TestCase):
     def test_write_report_view(self):
         self.client.force_login(self.doctor)
         resp = self.client.post(reverse('write_report'), {
-            'patient_id': self.patient.id, 'title': 'Checkup', 'diagnosis': 'Healthy', 'visible': 'on'
+            'patient': self.patient.id, 'title': 'Checkup', 'diagnosis': 'Healthy', 'visible': 'on'
         })
         self.assertRedirects(resp, reverse('doctor_reports'))
         self.assertEqual(MedicalReport.objects.count(), 1)
